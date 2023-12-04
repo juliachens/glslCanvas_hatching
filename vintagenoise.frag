@@ -60,6 +60,7 @@ void main() {
         color = mix(blue, red, (n - 0.356) * 2.528); // interpolation between blue and red
     }
     
-    color = texture2D(u_tex0, st).rgb;    
+    float info=texture2D(u_tex0,st).g;
+    vec3 col=vec3(st*4.528, info);
     gl_FragColor = vec4(vec3(color),1.0);
 }
