@@ -5,6 +5,7 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
+uniform sampler2D u_tex0; //MonaLisa
 
 //reCreated from inigo quilez - http://iquilezles.org/www/articles/voronoise/voronoise.htm
 //My Transition: shape, recreate color
@@ -58,6 +59,7 @@ void main() {
     } else {
         color = mix(blue, red, (n - 0.356) * 2.528); // interpolation between blue and red
     }
-
+    
+    float info=texture2D(u_tex0,st).g;
     gl_FragColor = vec4(color, 1.0);
 }
