@@ -44,23 +44,29 @@ float iqnoise( in vec2 x, float u, float v ) {
 void main() {
     vec2 st = gl_FragCoord.xy/u_resolution.xy;
     st.x *= u_resolution.x/u_resolution.y;
-    vec3 color = vec3(0.850,0.823,0.789);
 
+    // 採樣紋理
+    vec4 texColor = texture2D(u_tex0, st);
+
+    // 加入iqnoise
     st *= 12.368;
     float n = iqnoise(st, u_mouse.x/u_resolution.x, u_mouse.y/u_resolution.y);
 
-    // interpolation between orange,blue, red
+    // 插值顏色
     vec3 orange = vec3(0.765,0.524,0.351);
     vec3 blue = vec3(0.174,0.287,0.660);
     vec3 red = vec3(0.740,0.263,0.142);
+    vec3 noiseColor;
 
     if (n < 0.628) {
-        color = mix(orange, blue, n * 2.240); // interpolation between orange and blue
+        noiseColor = mix(orange, blue, n * 2.240);
     } else {
-        color = mix(blue, red, (n - 0.356) * 2.528); // interpolation between blue and red
+        noiseColor = mix(blue, red, (n - 0.356) * 2.528);
     }
-    
-    float info=texture2D(u_tex0,st).g;
-    vec3 col=vec3(st*4.528, info);
-    gl_FragColor = vec4(vec3(color),1.0);
+
+    // 結合紋理顏色和 noiseColor
+    // 可以根据需要需要呈現的強弱做調整
+    vec3 finalColor = mix(texColor.rgb, noiseColor, 0.5); // 50％
+
+    gl_FragColor = vec4(finalColor, texColor.a); // 使用原始紋理的alpha值
 }
