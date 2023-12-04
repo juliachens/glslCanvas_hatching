@@ -31,7 +31,7 @@ float iqnoise( in vec2 x, float u, float v ) {
             vec3 o = hash3(p + g)*vec3(u,u,0.376);
             vec2 r = g - f + o.xy;
             float d = dot(r,r);
-            float ww = pow( 1.0-smoothstep(0.640,0.910,sqrt(d)), k );
+            float ww = pow( 1.0-smoothstep(0.459,1.70,sqrt(d)), k );
             va += o.z*ww;
             wt += ww;
         }
