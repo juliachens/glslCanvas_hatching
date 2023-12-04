@@ -55,18 +55,24 @@ void main() {
     // 插值顏色
     vec3 orange = vec3(0.765,0.524,0.351);
     vec3 blue = vec3(0.174,0.287,0.660);
-    vec3 red = vec3(0.740,0.263,0.142);
     vec3 noiseColor;
+
+    // 判斷是否使用原始顏色（背景）
+    bool useTexColor = false;
 
     if (n < 0.628) {
         noiseColor = mix(orange, blue, n * 2.240);
     } else {
-        noiseColor = mix(blue, red, (n - 0.356) * 2.528);
+        useTexColor = true;
     }
 
     // 結合紋理顏色和 noiseColor
-    // 可以根据需要需要呈現的強弱做調整
-    vec3 finalColor = mix(texColor.rgb, noiseColor, 0.5); // 50％
+    vec3 finalColor;
+    if (useTexColor) {
+        finalColor = texColor.rgb;
+    } else {
+        finalColor = mix(texColor.rgb, noiseColor, 0.5); // 50%混合
+    }
 
-    gl_FragColor = vec4(finalColor, texColor.a); // 使用原始紋理的alpha值
+    gl_FragColor = vec4(finalColor, texColor.a); // 使用原始的alpha值
 }
