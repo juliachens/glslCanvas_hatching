@@ -31,7 +31,7 @@ float iqnoise( in vec2 x, float u, float v ) {
             vec3 o = hash3(p + g)*vec3(u,u,0.376);
             vec2 r = g - f + o.xy;
             float d = dot(r,r);
-            float ww = pow( 1.0-smoothstep(0.55,1.70,sqrt(d)), k );
+            float ww = pow( 1.0-smoothstep(0.45,1.70,sqrt(d)), k );
             va += o.z*ww;
             wt += ww;
         }
@@ -49,7 +49,8 @@ void main() {
     vec4 texColor = texture2D(u_tex0, st);
 
     // 加入iqnoise
-    st *= 12.368;
+    //st *= 12.368;
+    st = (st-.5)*7.622+.5;
     float n = iqnoise(st, u_mouse.x/u_resolution.x, u_mouse.y/u_resolution.y);
 
     // 插值顏色
