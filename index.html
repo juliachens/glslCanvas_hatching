@@ -69,7 +69,7 @@
 
     </head>
     <body>
-        <canvas id="glslCanvas" data-fragment-url="vintagenoise.frag" width="800" height="600" data-textures="data/inthemoodforlove.jpg, data/hatch_0.jpg, data/hatch_1.jpg, data/hatch_2.jpg, data/hatch_3.jpg, data/hatch_4.jpg, data/hatch_5.jpg"></canvas>
+        <canvas id="glslCanvas" data-fragment-url="vintagenoise.frag" width="800" height="600" data-textures="data/InTheMoodForLove.mp4, data/hatch_0.jpg, data/hatch_1.jpg, data/hatch_2.jpg, data/hatch_3.jpg, data/hatch_4.jpg, data/hatch_5.jpg"></canvas>
         <div id="credits">
             <p class="label" id="title"></p>
             <p class="label" id="author"></p>
@@ -78,6 +78,7 @@
 
     <script>
         var canvas = document.getElementById("glslCanvas");
+        var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         var sandbox = new GlslCanvas(canvas);
         var texCounter = 0;
         var sandbox_content = "";
@@ -96,6 +97,36 @@
             }
             return query;
         }
+
+        function loadTexture(gl, url) {
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            // 因为图片要加载，所以先设置为1像素的透明纹理
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]));
+
+            var image = new Image();
+            image.onload = function() {
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                // WebGL1对非2的次幂图像有不同的要求
+                if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                   gl.generateMipmap(gl.TEXTURE_2D);
+                } else {
+                   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                }
+            };
+            image.src = url;
+
+            return texture;
+        }
+
+        function isPowerOf2(value) {
+            return (value & (value - 1)) == 0;
+        }
+
 
         function load(url) {
             // Make the request and wait for the reply
