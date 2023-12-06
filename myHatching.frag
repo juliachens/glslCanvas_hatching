@@ -14,8 +14,8 @@ uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
 uniform sampler2D u_tex4;
-uniform sampler2D u_tex5;
-uniform sampler2D u_tex6;
+//uniform sampler2D u_tex5;
+//uniform sampler2D u_tex6;
 
 float breathing=(exp(sin(u_time*2.0*3.14159/8.0)) - 0.36787944)*0.42545906412;
 float mouseEffect(vec2 uv, vec2 mouse, float size)
@@ -38,12 +38,12 @@ void main()
 
     vec4 c;
                 float step = 1. / 6.;
-                if( shading <= step ){   
-                    c = mix( texture2D( u_tex6, vUv ), texture2D( u_tex5, vUv ), 6. * shading );
-                }
-                if( shading > step && shading <= 2. * step ){
-                    c = mix( texture2D( u_tex5, vUv ), texture2D( u_tex4, vUv) , 6. * ( shading - step ) );
-                }
+                //if( shading <= step ){   
+                    //c = mix( texture2D( u_tex6, vUv ), texture2D( u_tex5, vUv ), 6. * shading );
+                //}
+                //if( shading > step && shading <= 2. * step ){
+                    //c = mix( texture2D( u_tex5, vUv ), texture2D( u_tex4, vUv) , 6. * ( shading - step ) );
+                //}
                 if( shading > 2. * step && shading <= 3. * step ){
                     c = mix( texture2D( u_tex4, vUv ), texture2D( u_tex3, vUv ), 6. * ( shading - 2. * step ) );
                 }
