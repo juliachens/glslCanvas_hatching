@@ -14,6 +14,7 @@ uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
 uniform sampler2D u_tex4;
+uniform sampler2D u_tex0;
 //uniform sampler2D u_tex5;
 //uniform sampler2D u_tex6;
 
@@ -57,8 +58,8 @@ void main()
                     c = mix( texture2D( u_tex1, vUv ), vec4( 1. ), 6. * ( shading - 5. * step ) );
                 }
                 
-     vec4 inkColor = vec4(0.726,0.985,0.995,1.000);
-     vec4 src = mix( mix( inkColor, vec4(1.), c.r ), c, 0.252 );
+     vec4 inkColor = vec4(0.794,1.000,0.952,1.000);
+     vec4 src = mix( mix( inkColor, vec4(1.), c.r ), c, 0.268 );
      vec4 mixColor = mix(shadeColor, src, value);
      gl_FragColor = mixColor;
 }
