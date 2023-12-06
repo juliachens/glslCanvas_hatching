@@ -63,4 +63,3 @@ void main()
      vec4 mixColor = mix(shadeColor, src, value);
      gl_FragColor = mixColor;
 }
-
