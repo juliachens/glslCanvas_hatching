@@ -38,27 +38,27 @@ void main()
 
     vec4 c;
                 float step = 1. / 6.;
-                //if( shading <= step ){   
-                    //c = mix( texture2D( u_tex6, vUv ), texture2D( u_tex5, vUv ), 6. * shading );
-                //}
-                //if( shading > step && shading <= 2. * step ){
-                    //c = mix( texture2D( u_tex5, vUv ), texture2D( u_tex4, vUv) , 6. * ( shading - step ) );
-                //}
+                if( shading <= step ){   
+                    c = mix( texture2D( u_tex4, vUv ), texture2D( u_tex3, vUv ), 6. * shading );
+                }
+                if( shading > step && shading <= 2. * step ){
+                    c = mix( texture2D( u_tex3, vUv ), texture2D( u_tex2, vUv) , 6. * ( shading - step ) );
+                }
                 if( shading > 2. * step && shading <= 3. * step ){
-                    c = mix( texture2D( u_tex4, vUv ), texture2D( u_tex3, vUv ), 6. * ( shading - 2. * step ) );
+                    c = mix( texture2D( u_tex2, vUv ), texture2D( u_tex1, vUv ), 6. * ( shading - 2. * step ) );
                 }
-                if( shading > 3. * step && shading <= 4. * step ){
-                    c = mix( texture2D( u_tex3, vUv ), texture2D( u_tex2, vUv ), 6. * ( shading - 3. * step ) );
-                }
-                if( shading > 4. * step && shading <= 5. * step ){
-                    c = mix( texture2D( u_tex2, vUv ), texture2D( u_tex1, vUv ), 6. * ( shading - 4. * step ) );
-                }
-                if( shading > 5. * step ){
+                //if( shading > 3. * step && shading <= 4. * step ){
+                    //c = mix( texture2D( u_tex3, vUv ), texture2D( u_tex2, vUv ), 6. * ( shading - 3. * step ) );
+                //}
+                //if( shading > 4. * step && shading <= 5. * step ){
+                    //c = mix( texture2D( u_tex2, vUv ), texture2D( u_tex1, vUv ), 6. * ( shading - 4. * step ) );
+                //}
+                if( shading > 3. * step ){
                     c = mix( texture2D( u_tex1, vUv ), vec4( 1. ), 6. * ( shading - 5. * step ) );
                 }
                 
-     vec4 inkColor = vec4(0.794,1.000,0.952,1.000);
-     vec4 src = mix( mix( inkColor, vec4(1.), c.r ), c, 0.268 );
+     vec4 inkColor = vec4(0.726,0.985,0.995,1.000);
+     vec4 src = mix( mix( inkColor, vec4(1.), c.r ), c, 0.252 );
      vec4 mixColor = mix(shadeColor, src, value);
      gl_FragColor = mixColor;
 }
