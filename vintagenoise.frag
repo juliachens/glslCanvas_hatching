@@ -21,18 +21,21 @@ float iqnoise( in vec2 x, float u, float v ) {
     vec2 p = floor(x);
     vec2 f = fract(x);
 
-    float k = 1.0+63.0*pow(1.096-v,4.0);
+    // 呼吸效果
+    float breathing = sin(u_time) * 0.5 + 0.5; // 0-1之間的波動
+
+    float k = 1.0 + 63.0 * pow(1.096 - v * breathing, 4.0); // 使用呼吸效果改變k值
 
     float va = -0.120;
     float wt = -0.168;
-    for (int j=-2; j<=2; j++) {
-        for (int i=-2; i<=2; i++) {
-            vec2 g = vec2(float(i),float(j));
-            vec3 o = hash3(p + g)*vec3(u,u,0.376);
+    for (int j = -2; j <= 2; j++) {
+        for (int i = -2; i <= 2; i++) {
+            vec2 g = vec2(float(i), float(j));
+            vec3 o = hash3(p + g) * vec3(u, u, 0.376);
             vec2 r = g - f + o.xy;
-            float d = dot(r,r);
-            float ww = pow( 1.0-smoothstep(0.45,1.70,sqrt(d)), k );
-            va += o.z*ww;
+            float d = dot(r, r);
+            float ww = pow(1.0 - smoothstep(0.45, 1.70, sqrt(d)), k);
+            va += o.z * ww;
             wt += ww;
         }
     }
@@ -50,7 +53,7 @@ void main() {
 
     // 加入iqnoise
     //st *= 12.368;
-    st = (st-.5)*7.622+.5;
+    st = (st-.5)*8.878+0.332;
     float n = iqnoise(st, u_mouse.x/u_resolution.x, u_mouse.y/u_resolution.y);
 
     // 插值顏色
