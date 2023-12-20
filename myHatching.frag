@@ -14,7 +14,6 @@ uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
 uniform sampler2D u_tex4;
-uniform sampler2D u_tex0;
 //uniform sampler2D u_tex5;
 //uniform sampler2D u_tex6;
 
