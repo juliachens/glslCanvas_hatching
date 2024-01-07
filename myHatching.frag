@@ -1,7 +1,3 @@
-// Author: CMH
-// Title: Learning Shaders
-
-
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -17,23 +13,35 @@ uniform sampler2D u_tex4;
 uniform sampler2D u_tex5;
 uniform sampler2D u_tex6;
 
-float breathing=(exp(sin(u_time*2.0*3.14159/8.0)) - 0.36787944)*0.42545906412;
-float mouseEffect(vec2 uv, vec2 mouse, float size)
-{
-    float dist=length(uv-mouse);
-    return smoothstep(size, size+0.2*(breathing+0.5), dist);  //size
+float breathing = (exp(sin(u_time * 2.0 * 3.14159 / 8.0)) - 0.36787944) * 0.42545906412;
+
+// 检测点是否在爱心形状内部
+bool inHeartShape(vec2 point, vec2 center, float size) {
+    point = (point - center) / size;
+    float x = point.x;
+    float y = point.y;
+    float x2 = x * x;
+    float y2 = y * y;
+    // 确保表达式中所有的常数和运算都是浮点数
+    return (x2 + y2 - 2.0 * abs(x) * x2 - y2 * y2) <= 0.0;
 }
 
+float mouseEffect(vec2 uv, vec2 mouse, float size) {
+    if (inHeartShape(uv, mouse, size)) {
+        return 1.0; // 在爱心形状内部
+    } else {
+        return 0.0; // 在爱心形状外部
+    }
+}
 
-void main()
-{
-    vec2 uv= gl_FragCoord.xy/u_resolution.xy;
-    vec2 vUv=fract(6.0*uv);                 //key
-    vec4 shadeColor= texture2D(u_tex0, uv); //取MonaLisa
-    float shading= shadeColor.g;            //取MonaLisa綠色版作為明亮值
-    vec2 mouse=u_mouse.xy/u_resolution.xy;
-    
-    float value=mouseEffect(uv,mouse,0.05);
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    vec2 vUv = fract(6.0 * uv);             // key
+    vec4 shadeColor = texture2D(u_tex0, uv); // 取 MonaLisa
+    float shading = shadeColor.g;            // 取 MonaLisa 绿色版作为明亮值
+    vec2 mouse = u_mouse.xy / u_resolution.xy;
+
+    float value = mouseEffect(uv, mouse, 0.05 * (breathing + 1.0));
 
 
     vec4 c;
