@@ -1050,6 +1050,8 @@ function subscribeMixin$1(target) {
 }
 
 // Texture management
+// GL texture wrapper object for keeping track of a global set of textures, keyed by a unique user-defined name
+
 var Texture = function () {
     function Texture(gl, name) {
         var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -1344,9 +1346,6 @@ var Texture = function () {
     return Texture;
 }();
 
-// Report max texture size for a GL context
-
-
 Texture.getMaxTextureSize = function (gl) {
     return gl.getParameter(gl.MAX_TEXTURE_SIZE);
 };
@@ -1388,8 +1387,15 @@ var GlslCanvas = function () {
         contextOptions = contextOptions || {};
         options = options || {};
 
-        this.width = canvas.clientWidth;
-        this.height = canvas.clientHeight;
+        if (canvas.hasAttribute('data-fullscreen') && (canvas.getAttribute('data-fullscreen') == "1" || canvas.getAttribute('data-fullscreen') == "true")) {
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        } else {
+            this.width = canvas.clientWidth;
+            this.height = canvas.clientHeight;
+        }
 
         this.canvas = canvas;
         this.gl = undefined;
@@ -1399,6 +1405,7 @@ var GlslCanvas = function () {
         this.uniforms = {};
         this.vbo = {};
         this.isValid = false;
+        this.animationFrameRequest = undefined;
 
         this.BUFFER_COUNT = 0;
         // this.TEXTURE_COUNT = 0;
@@ -1491,7 +1498,7 @@ var GlslCanvas = function () {
             }
 
             sandbox.render();
-            window.requestAnimationFrame(RenderLoop);
+            sandbox.animationFrameRequest = window.requestAnimationFrame(RenderLoop);
         }
 
         // Start
@@ -1503,6 +1510,9 @@ var GlslCanvas = function () {
     createClass(GlslCanvas, [{
         key: 'destroy',
         value: function destroy() {
+            // Stop the animation
+            cancelAnimationFrame(this.animationFrameRequest);
+
             this.animated = false;
             this.isValid = false;
             for (var tex in this.textures) {
@@ -1520,6 +1530,7 @@ var GlslCanvas = function () {
                 var buffer = this.buffers[key];
                 this.gl.deleteProgram(buffer.program);
             }
+
             this.program = null;
             this.gl = null;
         }
@@ -1971,6 +1982,109 @@ var GlslCanvas = function () {
                     this.output.resize(W, H);
                 }
             };
+        }
+
+        // create a buffers
+
+    }, {
+        key: 'createBuffer',
+        value: function createBuffer(W, H, program) {
+            var gl = this.gl;
+            var index = this.BUFFER_COUNT;
+            this.BUFFER_COUNT += 2;
+            gl.getExtension('OES_texture_float');
+            var texture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0 + index);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.FLOAT, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            var buffer = gl.createFramebuffer();
+            return {
+                index: index,
+                texture: texture,
+                buffer: buffer,
+                W: W,
+                H: H,
+                resize: function resize(W, H) {
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, buffer);
+                    var minW = Math.min(W, this.W);
+                    var minH = Math.min(H, this.H);
+                    var pixels = new Float32Array(minW * minH * 4);
+                    gl.readPixels(0, 0, minW, minH, gl.RGBA, gl.FLOAT, pixels);
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    var newIndex = index + 1;
+                    var newTexture = gl.createTexture();
+                    gl.activeTexture(gl.TEXTURE0 + newIndex);
+                    gl.bindTexture(gl.TEXTURE_2D, newTexture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.FLOAT, null);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, minW, minH, gl.RGBA, gl.FLOAT, pixels);
+                    var newBuffer = gl.createFramebuffer();
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    gl.deleteTexture(texture);
+                    gl.activeTexture(gl.TEXTURE0 + index);
+                    gl.bindTexture(gl.TEXTURE_2D, newTexture);
+                    index = this.index = index;
+                    texture = this.texture = newTexture;
+                    buffer = this.buffer = newBuffer;
+                    this.W = W;
+                    this.H = H;
+                }
+            };
+        }
+
+        // resize buffers on canvas resize
+        // consider applying a throttle of 50 ms on canvas resize
+        // to avoid requestAnimationFrame and Gl violations
+
+    }, {
+        key: 'resizeSwappableBuffers',
+        value: function resizeSwappableBuffers() {
+            var gl = this.gl;
+            var W = gl.canvas.width,
+                H = gl.canvas.height;
+            gl.viewport(0, 0, W, H);
+            for (var key in this.buffers) {
+                var buffer = this.buffers[key];
+                buffer.bundle.resize(W, H, buffer.program, buffer.name);
+            }
+            gl.useProgram(this.program);
+        }
+    }, {
+        key: 'version',
+        value: function version() {
+            return '0.1.7';
+        }
+    }]);
+    return GlslCanvas;
+}();
+
+function loadAllGlslCanvas() {
+    var list = document.getElementsByClassName('glslCanvas');
+    if (list.length > 0) {
+        window.glslCanvases = [];
+        for (var i = 0; i < list.length; i++) {
+            var sandbox = new GlslCanvas(list[i]);
+            if (sandbox.isValid) {
+                window.glslCanvases.push(sandbox);
+            }
+        }
+    }
+}
+
+window.addEventListener('load', function () {
+    loadAllGlslCanvas();
+});
+
+return GlslCanvas;
+
+})));
         }
 
         // create a buffers
