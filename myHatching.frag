@@ -57,7 +57,7 @@ void main()
                     c = mix( texture2D( u_tex1, vUv ), vec4( 1. ), 6. * ( shading - 5. * step ) );
                 }
                 
-     vec4 inkColor = vec4(0.0, 0.0, 1.0, 1.0);
+     vec4 inkColor = vec4(0.980,0.678,0.445,1.000);
      vec4 src = mix( mix( inkColor, vec4(1.), c.r ), c, .5 );
      vec4 mixColor = mix(shadeColor, src, value);
      gl_FragColor = mixColor;
