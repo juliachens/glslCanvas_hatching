@@ -12,6 +12,7 @@ uniform sampler2D u_tex3;
 uniform sampler2D u_tex4;
 uniform sampler2D u_tex5;
 uniform sampler2D u_tex6;
+uniform sampler2D u_tex7;
 
 float breathing = (exp(sin(u_time * 2.0 * 3.14159 / 8.0)) - 0.36787944) * 0.42545906412;
 
